@@ -31,8 +31,9 @@ def gerar_pdf(df, nome):
 
     pdf.set_font("Arial", size=9)
 
-    # Organizar por dia para alternar o fundo visualmente
+    # Ordenar por data
     df_ordenado = df.sort_values(by="Data").reset_index(drop=True)
+
     dia_anterior = None
     alternar_cor = False
 
@@ -44,20 +45,22 @@ def gerar_pdf(df, nome):
         linha = f"{data} - {periodo} - {setor}"
         linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
 
+        # Alternar cor de fundo por dia
         if data != dia_anterior:
             alternar_cor = not alternar_cor
             dia_anterior = data
 
         if alternar_cor:
-            pdf.set_fill_color(230, 230, 230)  # cinza clarinho
-            pdf.cell(0, 6, linha_segura, ln=True, fill=True)
+            pdf.set_fill_color(230, 230, 230)  # cinza bem clarinho
+            pdf.cell(0, 6, linha_segura, ln=True, fill=True)  # <- AQUI é o segredo
         else:
-            pdf.cell(0, 6, linha_segura, ln=True)
+            pdf.cell(0, 6, linha_segura, ln=True, fill=False)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
+
 
 
 if uploaded_file and nome_funcionario:
