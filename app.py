@@ -20,9 +20,8 @@ nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
 def gerar_pdf(df, nome):
     pdf = FPDF(format="A4")
     pdf.add_page()
-    
     pdf.set_margins(left=10, top=10, right=10)
-    pdf.set_auto_page_break(auto=False)  # não queremos que quebre página
+    pdf.set_auto_page_break(auto=False)
 
     pdf.set_font("Arial", size=10)
     titulo = f"Escala da {nome.title()} - Maio 2025"
@@ -31,10 +30,29 @@ def gerar_pdf(df, nome):
     pdf.ln(4)
 
     pdf.set_font("Arial", size=9)
-    for _, row in df.iterrows():
-        linha = f"{row['Data']} - {row['Período']} - {row['Setor']}"
+
+    # Organizar por dia para alternar o fundo visualmente
+    df_ordenado = df.sort_values(by="Data").reset_index(drop=True)
+    dia_anterior = None
+    alternar_cor = False
+
+    for _, row in df_ordenado.iterrows():
+        data = row["Data"]
+        periodo = row["Período"]
+        setor = row["Setor"]
+
+        linha = f"{data} - {periodo} - {setor}"
         linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
-        pdf.cell(0, 6, linha_segura, ln=True)
+
+        if data != dia_anterior:
+            alternar_cor = not alternar_cor
+            dia_anterior = data
+
+        if alternar_cor:
+            pdf.set_fill_color(230, 230, 230)  # cinza clarinho
+            pdf.cell(0, 6, linha_segura, ln=True, fill=True)
+        else:
+            pdf.cell(0, 6, linha_segura, ln=True)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
