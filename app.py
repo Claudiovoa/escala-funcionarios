@@ -15,7 +15,9 @@ def gerar_pdf(df, nome):
     pdf.set_auto_page_break(auto=True, margin=15)
     pdf.add_page()
     pdf.set_font("Arial", size=14)
-    pdf.cell(0, 10, f"Escala da {nome.title()} – Maio 2025", ln=True, align="C")
+    titulo = f"Escala da {nome.title()} - Maio 2025"
+    titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
+    pdf.cell(0, 10, titulo_seguro, ln=True, align="C")
     pdf.ln(10)
     pdf.set_font("Arial", size=12)
     for _, row in df.iterrows():
