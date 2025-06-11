@@ -44,10 +44,15 @@ if uploaded_file and nome_funcionario:
                 "Nome": nome
             })
 
-    df_total = pd.DataFrame(dados)
+        df_total = pd.DataFrame(dados)
 
-    # Filtra o nome desejado
-    df_filtrado = df_total[df_total["Nome"].str.lower().str.contains(nome_funcionario.lower())]
+    # Ver todos os nomes únicos encontrados (debug)
+    nomes_unicos = df_total["Nome"].dropna().unique()
+    st.markdown("### 👥 Nomes encontrados na escala:")
+    st.write(", ".join(sorted(nomes_unicos)))
+
+    # Filtra o nome desejado com normalização
+    df_filtrado = df_total[df_total["Nome"].str.lower().str.strip().str.contains(nome_funcionario.lower().strip())]
 
     if not df_filtrado.empty:
         df_resultado = df_filtrado[["Data", "Período", "Setor"]].sort_values(by="Data")
