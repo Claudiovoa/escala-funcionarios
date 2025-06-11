@@ -16,18 +16,17 @@ if uploaded_file and nome_funcionario:
         for page in pdf.pages:
             texto += page.extract_text()
 
-    linhas = texto.split("\n")
-    
-    # Pegamos as 2 primeiras linhas como cabeçalho real
-    linha_setores = linhas[0].strip().split()
-    linha_periodos = linhas[1].strip().split()
+    linhas = texto.strip().split("\n")
 
-    colunas = list(zip(linha_setores, linha_periodos))  # (setor, período) por coluna
-    dados = linhas[2:]  # a partir da linha 3 são os dias com os nomes
+    # Linhas 1 e 2 são cabeçalhos: setores e períodos
+    setores = linhas[0].strip().split()
+    periodos = linhas[1].strip().split()
+    colunas = list(zip(setores, periodos))  # [(Setor, Período), ...]
 
-    registros = []
+    dados = []
 
-    for linha in dados:
+    # A partir da linha 3 são os dias + escalas
+    for linha in linhas[2:]:
         partes = linha.strip().split()
         if len(partes) < 2:
             continue
@@ -38,19 +37,23 @@ if uploaded_file and nome_funcionario:
             if i >= len(colunas):
                 break
             setor, periodo = colunas[i]
-            if nome_funcionario.lower() in nome.lower():
-                registros.append({
-                    "Data": data,
-                    "Período": periodo.capitalize(),
-                    "Setor": setor
-                })
+            dados.append({
+                "Data": data,
+                "Período": periodo,
+                "Setor": setor,
+                "Nome": nome
+            })
 
-    if registros:
-        df = pd.DataFrame(registros)
+    df_total = pd.DataFrame(dados)
+
+    # Filtra o nome desejado
+    df_filtrado = df_total[df_total["Nome"].str.lower().str.contains(nome_funcionario.lower())]
+
+    if not df_filtrado.empty:
+        df_resultado = df_filtrado[["Data", "Período", "Setor"]].sort_values(by="Data")
         st.success(f"📌 Escala de: **{nome_funcionario.title()}**")
-        st.dataframe(df)
+        st.dataframe(df_resultado)
 
-        # Gerar PDF usando fpdf2
         def gerar_pdf(df, nome):
             pdf = FPDF()
             pdf.set_auto_page_break(auto=True, margin=15)
@@ -70,7 +73,7 @@ if uploaded_file and nome_funcionario:
             buffer.seek(0)
             return buffer
 
-        pdf_gerado = gerar_pdf(df, nome_funcionario)
+        pdf_gerado = gerar_pdf(df_resultado, nome_funcionario)
         st.download_button(
             "📥 Baixar PDF da escala",
             data=pdf_gerado,
