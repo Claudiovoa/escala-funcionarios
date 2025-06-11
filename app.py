@@ -11,26 +11,29 @@ uploaded_file = st.file_uploader("📄 Faça upload do PDF da escala geral", typ
 nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
 
 def gerar_pdf(df, nome):
-    pdf = FPDF()
-    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf = FPDF(format="A4")
     pdf.add_page()
-    pdf.set_font("Arial", size=14)
+    
+    pdf.set_margins(left=10, top=10, right=10)
+    pdf.set_auto_page_break(auto=False)  # não queremos que quebre página
 
+    pdf.set_font("Arial", size=10)
     titulo = f"Escala da {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 10, titulo_seguro, ln=True, align="C")
-    pdf.ln(10)
+    pdf.cell(0, 8, titulo_seguro, ln=True, align="C")
+    pdf.ln(4)
 
-    pdf.set_font("Arial", size=12)
+    pdf.set_font("Arial", size=9)
     for _, row in df.iterrows():
         linha = f"{row['Data']} - {row['Período']} - {row['Setor']}"
         linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
-        pdf.cell(0, 10, linha_segura, ln=True)
+        pdf.cell(0, 6, linha_segura, ln=True)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
+
 
 if uploaded_file and nome_funcionario:
     with pdfplumber.open(uploaded_file) as pdf:
