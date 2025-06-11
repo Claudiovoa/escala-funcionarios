@@ -10,80 +10,71 @@ st.title("📅 Escala Individual por Funcionário")
 uploaded_file = st.file_uploader("📄 Faça upload do PDF da escala geral", type="pdf")
 nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
 
+def gerar_pdf(df, nome):
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+    pdf.add_page()
+    pdf.set_font("Arial", size=14)
+    pdf.cell(0, 10, f"Escala da {nome.title()} – Maio 2025", ln=True, align="C")
+    pdf.ln(10)
+    pdf.set_font("Arial", size=12)
+    for _, row in df.iterrows():
+        linha = f"{row['Data']} - {row['Período']} - {row['Setor']}"
+        linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
+        pdf.cell(0, 10, linha_segura, ln=True)
+    buffer = io.BytesIO()
+    pdf.output(buffer)
+    buffer.seek(0)
+    return buffer
+
 if uploaded_file and nome_funcionario:
     with pdfplumber.open(uploaded_file) as pdf:
-        texto = ""
+        tabela_completa = []
         for page in pdf.pages:
-            texto += page.extract_text()
+            try:
+                tabela = page.extract_table()
+                if tabela:
+                    tabela_completa.extend(tabela)
+            except:
+                pass
 
-    linhas = texto.strip().split("\n")
+    if tabela_completa and len(tabela_completa) > 2:
+        # Primeiras duas linhas = cabeçalho (setores e períodos)
+        setores = tabela_completa[0][1:]  # ignorando primeira célula vazia (canto superior esquerdo)
+        periodos = tabela_completa[1][1:]
 
-    # Linhas 1 e 2 são cabeçalhos: setores e períodos
-    setores = linhas[0].strip().split()
-    periodos = linhas[1].strip().split()
-    colunas = list(zip(setores, periodos))  # [(Setor, Período), ...]
+        colunas = list(zip(setores, periodos))  # [(Setor, Período)]
+        registros = []
 
-    dados = []
+        for linha in tabela_completa[2:]:
+            if not linha or not linha[0]:
+                continue
+            data = linha[0]
+            nomes = linha[1:]
+            for i, nome in enumerate(nomes):
+                if i >= len(colunas):
+                    continue
+                setor, periodo = colunas[i]
+                if nome and nome_funcionario.lower() in nome.lower():
+                    registros.append({
+                        "Data": data,
+                        "Período": periodo,
+                        "Setor": setor
+                    })
 
-    # A partir da linha 3 são os dias + escalas
-    for linha in linhas[2:]:
-        partes = linha.strip().split()
-        if len(partes) < 2:
-            continue
-        data = partes[0]
-        nomes = partes[1:]
+        if registros:
+            df_resultado = pd.DataFrame(registros)
+            st.success(f"📌 Escala de: **{nome_funcionario.title()}**")
+            st.dataframe(df_resultado)
 
-        for i, nome in enumerate(nomes):
-            if i >= len(colunas):
-                break
-            setor, periodo = colunas[i]
-            dados.append({
-                "Data": data,
-                "Período": periodo,
-                "Setor": setor,
-                "Nome": nome
-            })
-
-        df_total = pd.DataFrame(dados)
-
-    # Ver todos os nomes únicos encontrados (debug)
-    nomes_unicos = df_total["Nome"].dropna().unique()
-    st.markdown("### 👥 Nomes encontrados na escala:")
-    st.write(", ".join(sorted(nomes_unicos)))
-
-    # Filtra o nome desejado com normalização
-    df_filtrado = df_total[df_total["Nome"].str.lower().str.strip().str.contains(nome_funcionario.lower().strip())]
-
-    if not df_filtrado.empty:
-        df_resultado = df_filtrado[["Data", "Período", "Setor"]].sort_values(by="Data")
-        st.success(f"📌 Escala de: **{nome_funcionario.title()}**")
-        st.dataframe(df_resultado)
-
-        def gerar_pdf(df, nome):
-            pdf = FPDF()
-            pdf.set_auto_page_break(auto=True, margin=15)
-            pdf.add_page()
-            pdf.set_font("Arial", size=14)
-            pdf.cell(0, 10, f"Escala da {nome.title()} – Maio 2025", ln=True, align="C")
-            pdf.ln(10)
-            pdf.set_font("Arial", size=12)
-
-            for _, row in df.iterrows():
-                linha = f"{row['Data']} - {row['Período']} - {row['Setor']}"
-                linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
-                pdf.cell(0, 10, linha_segura, ln=True)
-
-            buffer = io.BytesIO()
-            pdf.output(buffer)
-            buffer.seek(0)
-            return buffer
-
-        pdf_gerado = gerar_pdf(df_resultado, nome_funcionario)
-        st.download_button(
-            "📥 Baixar PDF da escala",
-            data=pdf_gerado,
-            file_name=f"escala_{nome_funcionario.lower()}.pdf",
-            mime="application/pdf"
-        )
+            pdf_gerado = gerar_pdf(df_resultado, nome_funcionario)
+            st.download_button(
+                "📥 Baixar PDF da escala",
+                data=pdf_gerado,
+                file_name=f"escala_{nome_funcionario.lower()}.pdf",
+                mime="application/pdf"
+            )
+        else:
+            st.warning("⚠️ Funcionário não encontrado na escala.")
     else:
-        st.warning("⚠️ Funcionário não encontrado na escala.")
+        st.error("❌ Não foi possível extrair a tabela do PDF. Verifique o layout.")
