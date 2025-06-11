@@ -4,6 +4,8 @@ import pandas as pd
 from fpdf import FPDF
 import io
 
+# Configuração da página
+st.set_page_config(page_title="Escala de Funcionários", layout="centered")
 st.title("📅 Escala Individual por Funcionário")
 
 uploaded_file = st.file_uploader("Faça upload do PDF da escala geral", type="pdf")
@@ -25,7 +27,7 @@ if uploaded_file and nome_funcionario:
     periodos = ["MANHÃ", "TARDE", "NOITE"]
 
     for linha in linhas:
-        if "-mai." in linha or "-mai" in linha:
+        if "-mai" in linha:  # pega tudo tipo 1-mai., 2-mai
             partes = linha.split()
             if len(partes) > 1:
                 data = partes[0]
@@ -45,14 +47,15 @@ if uploaded_file and nome_funcionario:
         st.success(f"Escala de: **{nome_funcionario.title()}**")
         st.dataframe(df)
 
+        # Função atualizada com suporte UTF-8
         def gerar_pdf(df, nome):
             pdf = FPDF()
-            pdf.set_auto_page_break(auto=True, margin=15)
             pdf.add_page()
-            pdf.set_font("Arial", "B", 16)
+            pdf.add_font("DejaVu", "", fname="DejaVuSans.ttf", uni=True)
+            pdf.set_font("DejaVu", "", 16)
             pdf.cell(0, 10, f"Escala da {nome.title()} – Maio 2025", ln=True, align="C")
             pdf.ln(10)
-            pdf.set_font("Arial", size=12)
+            pdf.set_font("DejaVu", "", 12)
             for _, row in df.iterrows():
                 linha = f"{row['Data']} — {row['Período']} — {row['Setor']}"
                 pdf.cell(0, 10, linha, ln=True)
@@ -70,4 +73,3 @@ if uploaded_file and nome_funcionario:
         )
     else:
         st.warning("Funcionário não encontrado na escala.")
-
