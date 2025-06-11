@@ -32,7 +32,9 @@ def gerar_pdf(df, nome):
     pdf.set_font("Arial", size=9)
 
     # Ordenar por data
-    df_ordenado = df.sort_values(by="Data").reset_index(drop=True)
+    df["Data_ordenada"] = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
+    df_ordenado = df.sort_values(by="Data_ordenada").reset_index(drop=True)
+
 
     dia_anterior = None
     alternar_cor = False
