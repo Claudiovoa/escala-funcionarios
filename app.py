@@ -4,8 +4,15 @@ import pandas as pd
 from fpdf import FPDF
 import io
 
-st.set_page_config(page_title="Escala de Funcionários", layout="wide")
-st.title("📅 Escala Individual por Funcionário")
+st.set_page_config(
+    page_title="Agenda de Plantões",
+    page_icon="🩺",
+    layout="wide"
+)
+
+# Título principal da aplicação
+st.title("🩺 Agenda de Plantões")
+st.markdown("---")
 
 uploaded_file = st.file_uploader("📄 Faça upload do PDF da escala geral", type="pdf")
 nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
