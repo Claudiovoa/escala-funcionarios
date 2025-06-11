@@ -53,16 +53,21 @@ if uploaded_file and nome_funcionario:
                 continue
             data = linha[0]
             nomes = linha[1:]
-            for i, nome in enumerate(nomes):
-                if i >= len(colunas):
-                    continue
-                setor, periodo = colunas[i]
-                if nome and nome_funcionario.lower() in nome.lower():
-                    registros.append({
-                        "Data": data,
-                        "Período": periodo,
-                        "Setor": setor
-                    })
+          for i, nome in enumerate(nomes):
+    if i >= len(colunas):
+        continue
+    if not nome:
+        continue
+    if nome_funcionario.lower() in nome.lower():
+        setor, periodo = colunas[i] if i < len(colunas) else ("Setor Desconhecido", "Período Desconhecido")
+        setor = setor or "Setor Desconhecido"
+        periodo = periodo or "Período Desconhecido"
+        registros.append({
+            "Data": data,
+            "Período": periodo,
+            "Setor": setor
+        })
+
 
         if registros:
             df_resultado = pd.DataFrame(registros)
