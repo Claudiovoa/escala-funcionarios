@@ -4,7 +4,7 @@ import pandas as pd
 from fpdf import FPDF
 import io
 
-st.set_page_config(page_title="Escala de Funcionários", layout="centered")
+st.set_page_config(page_title="Escala de Funcionários", layout="wide")
 st.title("📅 Escala Individual por Funcionário")
 
 uploaded_file = st.file_uploader("📄 Faça upload do PDF da escala geral", type="pdf")
@@ -16,37 +16,41 @@ if uploaded_file and nome_funcionario:
         for page in pdf.pages:
             texto += page.extract_text()
 
-    # Separar as linhas e processar
     linhas = texto.split("\n")
-    escalas = []
-    setores = [
-        "ENF B", "ENF D", "ENF E", "TRR", "UTI 1", "UTI 2", "UTI 3", "UTI 4", "UTI 5", "UTI6",
-        "PS", "UCP", "AMB", "CTQ ENF", "CTQ UTQ", "TMO", "PLETISMO"
-    ]
-    periodos = ["MANHÃ", "TARDE", "NOITE"]
+    
+    # Pegamos as 2 primeiras linhas como cabeçalho real
+    linha_setores = linhas[0].strip().split()
+    linha_periodos = linhas[1].strip().split()
 
-    for linha in linhas:
-        if "-mai" in linha:  # pega linhas como "1-mai." ou "2-mai"
-            partes = linha.split()
-            if len(partes) > 1:
-                data = partes[0]
-                nomes = partes[1:]
-                for i, nome in enumerate(nomes):
-                    setor_index = i % len(setores)
-                    periodo_index = (i // len(setores)) % 3
-                    if nome_funcionario.lower() in nome.lower():
-                        escalas.append({
-                            "Data": data,
-                            "Período": periodos[periodo_index],
-                            "Setor": setores[setor_index]
-                        })
+    colunas = list(zip(linha_setores, linha_periodos))  # (setor, período) por coluna
+    dados = linhas[2:]  # a partir da linha 3 são os dias com os nomes
 
-    if escalas:
-        df = pd.DataFrame(escalas)
+    registros = []
+
+    for linha in dados:
+        partes = linha.strip().split()
+        if len(partes) < 2:
+            continue
+        data = partes[0]
+        nomes = partes[1:]
+
+        for i, nome in enumerate(nomes):
+            if i >= len(colunas):
+                break
+            setor, periodo = colunas[i]
+            if nome_funcionario.lower() in nome.lower():
+                registros.append({
+                    "Data": data,
+                    "Período": periodo.capitalize(),
+                    "Setor": setor
+                })
+
+    if registros:
+        df = pd.DataFrame(registros)
         st.success(f"📌 Escala de: **{nome_funcionario.title()}**")
         st.dataframe(df)
 
-        # Função de geração de PDF com fpdf2
+        # Gerar PDF usando fpdf2
         def gerar_pdf(df, nome):
             pdf = FPDF()
             pdf.set_auto_page_break(auto=True, margin=15)
@@ -57,11 +61,7 @@ if uploaded_file and nome_funcionario:
             pdf.set_font("Arial", size=12)
 
             for _, row in df.iterrows():
-                data = str(row['Data'])
-                periodo = str(row['Período'])
-                setor = str(row['Setor'])
-                linha = f"{data} - {periodo} - {setor}"
-                # Garante que não quebre o PDF com caracteres inválidos
+                linha = f"{row['Data']} - {row['Período']} - {row['Setor']}"
                 linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
                 pdf.cell(0, 10, linha_segura, ln=True)
 
