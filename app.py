@@ -46,6 +46,16 @@ if uploaded_file and nome_funcionario:
     if tabela_completa and len(tabela_completa) > 2:
         setores = tabela_completa[0][1:]
         periodos = tabela_completa[1][1:]
+
+# Preenche setores e períodos faltantes para manter o alinhamento com os dados
+        for i in range(len(periodos)):
+            if i >= len(setores):
+                setores.append("Setor Desconhecido")
+            if not setores[i]:
+                setores[i] = setores[i - 1] if i > 0 else "Setor Desconhecido"
+            if not periodos[i]:
+                periodos[i] = periodos[i - 1] if i > 0 else "Período Desconhecido"
+
         colunas = list(zip(setores, periodos))  # [(Setor, Período)]
 
         registros = []
