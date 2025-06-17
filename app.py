@@ -19,7 +19,7 @@ def gerar_pdf(df, nome):
     # Definindo as larguras das colunas da tabela
     largura_data = 18
     largura_periodo = 18
-    largura_setor = 20
+    largura_setor = 18
     largura_total_tabela = largura_data + largura_periodo + largura_setor
 
     # Calculando a posição inicial para centralizar o título sobre a tabela
