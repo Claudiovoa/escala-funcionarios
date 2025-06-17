@@ -29,7 +29,7 @@ def gerar_pdf(df, nome):
     # Posicionar o título na largura exata da tabela
     pdf.set_x(pos_x_titulo)
     pdf.set_font("Arial", style='B', size=6)
-    titulo = f"Escala de {nome.title()} - Maio 2025"
+    titulo = f"Escala {nome.title()}"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
     pdf.cell(w=largura_total_tabela, h=4, txt=titulo_seguro, border=0, ln=True, align='C')
     pdf.ln(1)
