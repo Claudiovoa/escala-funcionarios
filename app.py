@@ -4,15 +4,8 @@ import pandas as pd
 from fpdf import FPDF
 import io
 
-st.set_page_config(
-    page_title="Agenda de Plantões",
-    page_icon="🩺",
-    layout="wide"
-)
-
-# Título principal da aplicação
-st.title("🩺 Agenda de Plantões")
-st.markdown("---")
+st.set_page_config(page_title="Escala de Funcionários", layout="wide")
+st.title("📅 Escala Individual por Funcionário")
 
 uploaded_file = st.file_uploader("📄 Faça upload do PDF da escala geral", type="pdf")
 nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
@@ -46,11 +39,11 @@ def gerar_pdf(df, nome):
     alternar_cor = False
 
     for _, row in df_ordenado.iterrows():
-        data = row["Data"]
-        periodo = row["Período"]
-        setor = row["Setor"]
+        data = str(row["Data"])
+        periodo = str(row["Período"])
+        setor = str(row["Setor"])
 
-        # Alterna a cor de fundo por dia
+        # Alternar cor de fundo por dia
         if data != dia_anterior:
             alternar_cor = not alternar_cor
             dia_anterior = data
@@ -61,9 +54,9 @@ def gerar_pdf(df, nome):
         else:
             fill = False
 
-        linha_data = str(data).encode("latin-1", "replace").decode("latin-1")
-        linha_periodo = str(periodo).encode("latin-1", "replace").decode("latin-1")
-        linha_setor = str(setor).encode("latin-1", "replace").decode("latin-1")
+        linha_data = data.encode("latin-1", "replace").decode("latin-1")
+        linha_periodo = periodo.encode("latin-1", "replace").decode("latin-1")
+        linha_setor = setor.encode("latin-1", "replace").decode("latin-1")
 
         pdf.cell(30, 5, linha_data, border=1, align='C', fill=fill)
         pdf.cell(30, 5, linha_periodo, border=1, align='C', fill=fill)
@@ -74,9 +67,6 @@ def gerar_pdf(df, nome):
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
-
-
-
 
 if uploaded_file and nome_funcionario:
     with pdfplumber.open(uploaded_file) as pdf:
@@ -93,7 +83,7 @@ if uploaded_file and nome_funcionario:
         setores = tabela_completa[0][1:]
         periodos = tabela_completa[1][1:]
 
-# Preenche setores e períodos faltantes para manter o alinhamento com os dados
+        # Preencher setores e períodos faltantes
         for i in range(len(periodos)):
             if i >= len(setores):
                 setores.append("Setor Desconhecido")
@@ -102,10 +92,9 @@ if uploaded_file and nome_funcionario:
             if not periodos[i]:
                 periodos[i] = periodos[i - 1] if i > 0 else "Período Desconhecido"
 
-        colunas = list(zip(setores, periodos))  # [(Setor, Período)]
+        colunas = list(zip(setores, periodos))
 
         registros = []
-
         for linha in tabela_completa[2:]:
             if not linha or not linha[0]:
                 continue
