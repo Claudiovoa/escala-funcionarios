@@ -13,23 +13,23 @@ nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
 def gerar_pdf(df, nome):
     pdf = FPDF(format="A4")
     pdf.add_page()
-    pdf.set_margins(left=5, top=5, right=5)  # Margens ainda menores
+    pdf.set_margins(left=5, top=5, right=5)
     pdf.set_auto_page_break(auto=False)
 
-    pdf.set_font("Arial", size=7)
+    pdf.set_font("Arial", size=6)
     titulo = f"Escala da {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 5, titulo_seguro, ln=True, align="C")
+    pdf.cell(0, 4, titulo_seguro, ln=True, align="C")
     pdf.ln(1)
 
     # Cabeçalho da tabela
-    pdf.set_font("Arial", style='B', size=6)
-    pdf.cell(25, 4, "Data", border=1, align='C')
-    pdf.cell(25, 4, "Período", border=1, align='C')
-    pdf.cell(40, 4, "Setor", border=1, align='C')
-    pdf.ln(4)
+    pdf.set_font("Arial", style='B', size=5)
+    pdf.cell(20, 3.5, "Data", border=1, align='C')
+    pdf.cell(20, 3.5, "Período", border=1, align='C')
+    pdf.cell(25, 3.5, "Setor", border=1, align='C')
+    pdf.ln(3.5)
 
-    pdf.set_font("Arial", size=6)
+    pdf.set_font("Arial", size=5)
 
     # Ordenar por data
     df["Data_ordenada"] = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
@@ -57,10 +57,10 @@ def gerar_pdf(df, nome):
         linha_periodo = periodo.encode("latin-1", "replace").decode("latin-1")
         linha_setor = setor.encode("latin-1", "replace").decode("latin-1")
 
-        pdf.cell(25, 4, linha_data, border=1, align='C', fill=fill)
-        pdf.cell(25, 4, linha_periodo, border=1, align='C', fill=fill)
-        pdf.cell(40, 4, linha_setor, border=1, align='L', fill=fill)
-        pdf.ln(4)
+        pdf.cell(20, 3.5, linha_data, border=1, align='C', fill=fill)
+        pdf.cell(20, 3.5, linha_periodo, border=1, align='C', fill=fill)
+        pdf.cell(25, 3.5, linha_setor, border=1, align='L', fill=fill)
+        pdf.ln(3.5)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
