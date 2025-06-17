@@ -23,18 +23,24 @@ def gerar_pdf(df, nome):
     pdf.set_margins(left=10, top=10, right=10)
     pdf.set_auto_page_break(auto=False)
 
-    pdf.set_font("Arial", size=10)
+    pdf.set_font("Arial", size=9)
     titulo = f"Escala da {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 8, titulo_seguro, ln=True, align="C")
-    pdf.ln(4)
+    pdf.cell(0, 6, titulo_seguro, ln=True, align="C")
+    pdf.ln(2)
 
-    pdf.set_font("Arial", size=9)
+    # Cabeçalho da tabela
+    pdf.set_font("Arial", style='B', size=8)
+    pdf.cell(30, 5, "Data", border=1, align='C')
+    pdf.cell(30, 5, "Período", border=1, align='C')
+    pdf.cell(0, 5, "Setor", border=1, align='C')
+    pdf.ln(5)
+
+    pdf.set_font("Arial", size=8)
 
     # Ordenar por data
     df["Data_ordenada"] = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
     df_ordenado = df.sort_values(by="Data_ordenada").reset_index(drop=True)
-
 
     dia_anterior = None
     alternar_cor = False
@@ -44,24 +50,31 @@ def gerar_pdf(df, nome):
         periodo = row["Período"]
         setor = row["Setor"]
 
-        linha = f"{data} - {periodo} - {setor}"
-        linha_segura = linha.encode("latin-1", "replace").decode("latin-1")
-
-        # Alternar cor de fundo por dia
+        # Alterna a cor de fundo por dia
         if data != dia_anterior:
             alternar_cor = not alternar_cor
             dia_anterior = data
 
         if alternar_cor:
-            pdf.set_fill_color(230, 230, 230)  # cinza bem clarinho
-            pdf.cell(0, 6, linha_segura, ln=True, fill=True)  # <- AQUI é o segredo
+            pdf.set_fill_color(230, 230, 230)  # Cinza clarinho
+            fill = True
         else:
-            pdf.cell(0, 6, linha_segura, ln=True, fill=False)
+            fill = False
+
+        linha_data = str(data).encode("latin-1", "replace").decode("latin-1")
+        linha_periodo = str(periodo).encode("latin-1", "replace").decode("latin-1")
+        linha_setor = str(setor).encode("latin-1", "replace").decode("latin-1")
+
+        pdf.cell(30, 5, linha_data, border=1, align='C', fill=fill)
+        pdf.cell(30, 5, linha_periodo, border=1, align='C', fill=fill)
+        pdf.cell(0, 5, linha_setor, border=1, align='L', fill=fill)
+        pdf.ln(5)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
+
 
 
 
