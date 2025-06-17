@@ -16,8 +16,9 @@ def gerar_pdf(df, nome):
     pdf.set_margins(left=5, top=5, right=5)
     pdf.set_auto_page_break(auto=False)
 
-    pdf.set_font("Arial", size=5)
-    titulo = f"Escala da {nome.title()} - Maio 2025"
+    # Título centralizado
+    pdf.set_font("Arial", style='B', size=6)
+    titulo = f"Escala de {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
     pdf.cell(0, 4, titulo_seguro, ln=True, align="C")
     pdf.ln(1)
@@ -26,7 +27,7 @@ def gerar_pdf(df, nome):
     pdf.set_font("Arial", style='B', size=4.5)
     pdf.cell(18, 3, "Data", border=1, align='C')
     pdf.cell(18, 3, "Período", border=1, align='C')
-    pdf.cell(20, 3, "Setor", border=1, align='C')  # Setor agora 20% menor
+    pdf.cell(20, 3, "Setor", border=1, align='C')
     pdf.ln(3)
 
     pdf.set_font("Arial", size=4.5)
@@ -59,13 +60,14 @@ def gerar_pdf(df, nome):
 
         pdf.cell(18, 3, linha_data, border=1, align='C', fill=fill)
         pdf.cell(18, 3, linha_periodo, border=1, align='C', fill=fill)
-        pdf.cell(20, 3, linha_setor, border=1, align='C', fill=fill)  # Centralizado agora
+        pdf.cell(20, 3, linha_setor, border=1, align='C', fill=fill)
         pdf.ln(3)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
+
 
 
 if uploaded_file and nome_funcionario:
