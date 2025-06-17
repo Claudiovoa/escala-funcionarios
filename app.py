@@ -13,23 +13,23 @@ nome_funcionario = st.text_input("👤 Nome do funcionário para filtrar")
 def gerar_pdf(df, nome):
     pdf = FPDF(format="A4")
     pdf.add_page()
-    pdf.set_margins(left=10, top=10, right=10)
+    pdf.set_margins(left=5, top=5, right=5)  # Margens ainda menores
     pdf.set_auto_page_break(auto=False)
 
-    pdf.set_font("Arial", size=9)
+    pdf.set_font("Arial", size=7)
     titulo = f"Escala da {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 6, titulo_seguro, ln=True, align="C")
-    pdf.ln(2)
+    pdf.cell(0, 5, titulo_seguro, ln=True, align="C")
+    pdf.ln(1)
 
     # Cabeçalho da tabela
-    pdf.set_font("Arial", style='B', size=8)
-    pdf.cell(30, 5, "Data", border=1, align='C')
-    pdf.cell(30, 5, "Período", border=1, align='C')
-    pdf.cell(0, 5, "Setor", border=1, align='C')
-    pdf.ln(5)
+    pdf.set_font("Arial", style='B', size=6)
+    pdf.cell(25, 4, "Data", border=1, align='C')
+    pdf.cell(25, 4, "Período", border=1, align='C')
+    pdf.cell(40, 4, "Setor", border=1, align='C')
+    pdf.ln(4)
 
-    pdf.set_font("Arial", size=8)
+    pdf.set_font("Arial", size=6)
 
     # Ordenar por data
     df["Data_ordenada"] = pd.to_datetime(df["Data"], dayfirst=True, errors="coerce")
@@ -43,7 +43,6 @@ def gerar_pdf(df, nome):
         periodo = str(row["Período"])
         setor = str(row["Setor"])
 
-        # Alternar cor de fundo por dia
         if data != dia_anterior:
             alternar_cor = not alternar_cor
             dia_anterior = data
@@ -58,15 +57,16 @@ def gerar_pdf(df, nome):
         linha_periodo = periodo.encode("latin-1", "replace").decode("latin-1")
         linha_setor = setor.encode("latin-1", "replace").decode("latin-1")
 
-        pdf.cell(30, 5, linha_data, border=1, align='C', fill=fill)
-        pdf.cell(30, 5, linha_periodo, border=1, align='C', fill=fill)
-        pdf.cell(0, 5, linha_setor, border=1, align='L', fill=fill)
-        pdf.ln(5)
+        pdf.cell(25, 4, linha_data, border=1, align='C', fill=fill)
+        pdf.cell(25, 4, linha_periodo, border=1, align='C', fill=fill)
+        pdf.cell(40, 4, linha_setor, border=1, align='L', fill=fill)
+        pdf.ln(4)
 
     buffer = io.BytesIO()
     pdf.output(buffer)
     buffer.seek(0)
     return buffer
+
 
 if uploaded_file and nome_funcionario:
     with pdfplumber.open(uploaded_file) as pdf:
