@@ -16,18 +16,30 @@ def gerar_pdf(df, nome):
     pdf.set_margins(left=5, top=5, right=5)
     pdf.set_auto_page_break(auto=False)
 
-    # Título centralizado
+    # Definindo as larguras das colunas da tabela
+    largura_data = 18
+    largura_periodo = 18
+    largura_setor = 20
+    largura_total_tabela = largura_data + largura_periodo + largura_setor
+
+    # Calculando a posição inicial para centralizar o título sobre a tabela
+    margem_esquerda_tabela = pdf.l_margin
+    pos_x_titulo = margem_esquerda_tabela
+
+    # Posicionar o título na largura exata da tabela
+    pdf.set_x(pos_x_titulo)
     pdf.set_font("Arial", style='B', size=6)
     titulo = f"Escala de {nome.title()} - Maio 2025"
     titulo_seguro = titulo.encode("latin-1", "replace").decode("latin-1")
-    pdf.cell(0, 4, titulo_seguro, ln=True, align="C")
+    pdf.cell(w=largura_total_tabela, h=4, txt=titulo_seguro, border=0, ln=True, align='C')
     pdf.ln(1)
 
     # Cabeçalho da tabela
     pdf.set_font("Arial", style='B', size=4.5)
-    pdf.cell(18, 3, "Data", border=1, align='C')
-    pdf.cell(18, 3, "Período", border=1, align='C')
-    pdf.cell(20, 3, "Setor", border=1, align='C')
+    pdf.set_x(pos_x_titulo)
+    pdf.cell(largura_data, 3, "Data", border=1, align='C')
+    pdf.cell(largura_periodo, 3, "Período", border=1, align='C')
+    pdf.cell(largura_setor, 3, "Setor", border=1, align='C')
     pdf.ln(3)
 
     pdf.set_font("Arial", size=4.5)
@@ -58,9 +70,10 @@ def gerar_pdf(df, nome):
         linha_periodo = periodo.encode("latin-1", "replace").decode("latin-1")
         linha_setor = setor.encode("latin-1", "replace").decode("latin-1")
 
-        pdf.cell(18, 3, linha_data, border=1, align='C', fill=fill)
-        pdf.cell(18, 3, linha_periodo, border=1, align='C', fill=fill)
-        pdf.cell(20, 3, linha_setor, border=1, align='C', fill=fill)
+        pdf.set_x(pos_x_titulo)
+        pdf.cell(largura_data, 3, linha_data, border=1, align='C', fill=fill)
+        pdf.cell(largura_periodo, 3, linha_periodo, border=1, align='C', fill=fill)
+        pdf.cell(largura_setor, 3, linha_setor, border=1, align='C', fill=fill)
         pdf.ln(3)
 
     buffer = io.BytesIO()
